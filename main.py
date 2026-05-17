@@ -85,13 +85,11 @@ for d in funcs_difinitions:
 real_prompt += f"\n\nUser Prompt: {prompt}\n\nJSON:"
 
 
-print(real_prompt)
-
-
 
 state = "OPEN"
-ids_prompt_json = []
+ids_prompt_json = obj.encode(real_prompt)[0].tolist()
 ids_json = []
+
 
 
 while True:
@@ -110,14 +108,38 @@ while True:
             ids_json.append(l)
             ids_prompt_json.append(l)
 
-        state == "COLON"
+        state = "COLON"
         continue
 
 
     if state == "COLON":
+        ids_json.append(str_to_id[":"])
+        ids_prompt_json.append(str_to_id[":"])
+        state = "FUNC_NAME"
+        continue
+
+
+    if state == "FUNC_NAME":
+        
+        fnames_encoded = []
+        for n in funcs_list:
+            fnames_encoded.append(obj.encode(n)[0].tolist())
+        
+        pos = 0
+
+        while True:
+
+            alloweds = set()
+
+            for l in fnames_encoded:
+                if len(l) > pos:
+                    alloweds.add(l[pos])
+
+
         break
 
 
+    
 
 
 
