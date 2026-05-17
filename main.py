@@ -1,5 +1,6 @@
 from llm_sdk.llm_sdk import Small_LLM_Model
 import json
+import numpy as np
 
 obj = Small_LLM_Model()
 
@@ -67,6 +68,25 @@ def prepare_data(lst, dct):
             val.update({k: v["type"]})
         functions_parameters.update(val)
 
+def masking(logits, alloweds = None):
+    arr_logits = np.array(logits)
+
+    mask = np.full_like(arr_logits, -np.inf)
+
+    if alloweds is None:
+        mask = np.full_like(arr_logits, 0)
+    
+    else:
+        mask[list(alloweds)] = 0.0
+    
+    return np.argmax(arr_logits)
+
+
+print(masking([1,2,3,4], {2}))
+
+
+
+
 funcs_list = []
 functions_parameters = {}
 prepare_data(funcs_list, functions_parameters)
@@ -74,73 +94,71 @@ prepare_data(funcs_list, functions_parameters)
 
 
 
-prompt = "What is the sum of 265 and 345?"
+# prompt = "What is the sum of 265 and 345?"
 
-real_prompt = ""
-for d in funcs_difinitions:
-    real_prompt += "\n"
-    real_prompt += d["name"]
-    real_prompt += " : "
-    real_prompt += d["description"]
-real_prompt += f"\n\nUser Prompt: {prompt}\n\nJSON:"
-
-
-
-state = "OPEN"
-ids_prompt_json = obj.encode(real_prompt)[0].tolist()
-ids_json = []
+# real_prompt = ""
+# for d in funcs_difinitions:
+#     real_prompt += "\n"
+#     real_prompt += d["name"]
+#     real_prompt += " : "
+#     real_prompt += d["description"]
+# real_prompt += f"\n\nUser Prompt: {prompt}\n\nJSON:"
 
 
 
-while True:
-
-    if state == "OPEN":
-        ids_json.append(str_to_id["{"])
-        ids_prompt_json.append(str_to_id["{"])
-        state = "NAME_AS_STR"
-        continue
+# state = "OPEN"
+# ids_prompt_json = obj.encode(real_prompt)[0].tolist()
+# ids_json = []
 
 
-    if state == "NAME_AS_STR":
-        lst = obj.encode('"name"')[0].tolist()
-
-        for l in lst:
-            ids_json.append(l)
-            ids_prompt_json.append(l)
-
-        state = "COLON"
-        continue
 
 
-    if state == "COLON":
-        ids_json.append(str_to_id[":"])
-        ids_prompt_json.append(str_to_id[":"])
-        state = "FUNC_NAME"
-        continue
+# while True:
+
+#     if state == "OPEN":
+#         ids_json.append(str_to_id["{"])
+#         ids_prompt_json.append(str_to_id["{"])
+#         state = "NAME_AS_STR"
+#         continue
 
 
-    if state == "FUNC_NAME":
+#     if state == "NAME_AS_STR":
+#         lst = obj.encode('"name"')[0].tolist()
+
+#         for l in lst:
+#             ids_json.append(l)
+#             ids_prompt_json.append(l)
+
+#         state = "COLON"
+#         continue
+
+
+#     if state == "COLON":
+#         ids_json.append(str_to_id[":"])
+#         ids_prompt_json.append(str_to_id[":"])
+#         state = "FUNC_NAME"
+#         continue
+
+
+#     if state == "FUNC_NAME":
         
-        fnames_encoded = []
-        for n in funcs_list:
-            fnames_encoded.append(obj.encode(n)[0].tolist())
+#         fnames_encoded = []
+#         for n in funcs_list:
+#             fnames_encoded.append(obj.encode(n)[0].tolist())
         
-        pos = 0
+#         pos = 0
 
-        while True:
+#         while True:
 
-            alloweds = set()
+#             alloweds = set()
 
-            for l in fnames_encoded:
-                if len(l) > pos:
-                    alloweds.add(l[pos])
-
-
-        break
-
-
-    
+#             for l in fnames_encoded:
+#                 if len(l) > pos:
+#                     alloweds.add(l[pos])
+                
+            
+            
 
 
 
-print(obj.decode(ids_json))
+# print(obj.decode(ids_json))
